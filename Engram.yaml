@@ -1,0 +1,106 @@
+apiVersion: catalog.bubustack.io/v1alpha1
+kind: EngramTemplate
+metadata:
+  name: conversation-memory
+  annotations:
+    registry.bubustack.io/maturity: experimental
+spec:
+  version: 0.1.0
+  description: "Keeps short in-memory conversation history per session/participant and emits context packets."
+  image: ghcr.io/bubustack/conversation-memory-engram:0.1.0
+  supportedModes:
+    - deployment
+    - job
+  configSchema:
+    type: object
+    additionalProperties: false
+    properties:
+      maxMessages:
+        type: integer
+        default: 16
+        description: "Maximum number of history messages to keep per key."
+      sessionTTL:
+        type: string
+        default: 45m
+        description: "Idle TTL before a conversation key is evicted."
+      sweepInterval:
+        type: string
+        default: 1m
+        description: "How often to sweep expired session keys."
+      minUserChars:
+        type: integer
+        default: 4
+        description: "Minimum user transcript length before it is accepted into memory."
+      ignorePattern:
+        type: string
+        default: "(?i)^(mhm+|hmm+|uh+|um+|ok(?:ay)?|mm+|huh)[.!? ]*$"
+        description: "Regex of filler utterances to ignore for role=user."
+      dedupeWindow:
+        type: string
+        default: 1500ms
+        description: "Reject repeated same-role same-text messages inside this time window."
+      mergeWindowMs:
+        type: string
+        default: 3s
+        description: "Merge consecutive same-role packets arriving inside this window into one history message."
+      defaultRole:
+        type: string
+        default: user
+        enum: [user, assistant, system]
+        description: "Fallback role when packet metadata does not provide a known type."
+  inputSchema:
+    type: object
+    additionalProperties: true
+    properties:
+      key:
+        type: string
+        description: "Explicit conversation key. If omitted, derived from session/participant metadata."
+      sessionId:
+        type: string
+      role:
+        type: string
+        enum: [user, assistant, system, developer]
+      text:
+        type: string
+      assistantText:
+        type: string
+        description: "Optional mirrored assistant reply text to keep both sides in one in-memory session."
+      speakerId:
+        type: string
+      reset:
+        type: boolean
+      maxMessages:
+        type: integer
+      minUserChars:
+        type: integer
+      includeHistory:
+        type: boolean
+  outputSchema:
+    type: object
+    properties:
+      type:
+        type: string
+        const: conversation.context.v1
+      key:
+        type: string
+      accepted:
+        type: boolean
+      reason:
+        type: string
+      role:
+        type: string
+      text:
+        type: string
+      speakerId:
+        type: string
+      messageCount:
+        type: integer
+      history:
+        type: array
+        items:
+          type: object
+          properties:
+            role:
+              type: string
+            content:
+              type: string
