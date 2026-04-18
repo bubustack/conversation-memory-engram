@@ -5,9 +5,9 @@ metadata:
   annotations:
     registry.bubustack.io/maturity: experimental
 spec:
-  version: 0.1.0 # x-release-please-version
+  version: 0.1.1 # x-release-please-version
   description: "Keeps short in-memory conversation history per session/participant and emits context packets."
-  image: ghcr.io/bubustack/conversation-memory-engram:0.1.0 # x-release-please-version
+  image: ghcr.io/bubustack/conversation-memory-engram:0.1.1 # x-release-please-version
   supportedModes:
     - deployment
     - job
